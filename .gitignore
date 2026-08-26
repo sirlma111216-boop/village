@@ -1,0 +1,11 @@
+node_modules/
+data/sessions/*.json
+*.log
+.DS_Store
+
+# 폰트는 npm install 시 tools/sync-fonts.mjs 가 node_modules 에서 복사합니다
+public/fonts/
+
+# 삽화는 선생님이 직접 넣습니다 (README 참고)
+public/illustrations/*
+!public/illustrations/README.md

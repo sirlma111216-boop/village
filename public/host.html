@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>신뢰마을 · 진행자 화면</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23dceeb1'/><text y='.92em' x='50%25' text-anchor='middle' font-size='62'>🏘️</text></svg>">
+  <link rel="stylesheet" href="/fonts/pretendard.css">
+  <link rel="stylesheet" href="/fonts/mono.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/host.css">
+</head>
+<body class="host">
+
+  <!-- ============================================ 수업 만들기 -->
+  <section data-screen="setup" class="setup-wrap">
+    <div class="setup rise">
+      <p class="eyebrow">교실용 실시간 게임</p>
+      <h1 class="t-display-xl setup-title">신뢰마을</h1>
+      <p class="t-subhead setup-sub">들키지 않으면, 괜찮을까?</p>
+
+      <div class="setup-fields">
+        <div class="field">
+          <p class="caption field-label">마을 수</p>
+          <div class="toggle" id="villageChooser">
+            <button type="button" class="toggle-tab" data-value="2">2</button>
+            <button type="button" class="toggle-tab" data-value="3">3</button>
+            <button type="button" class="toggle-tab is-on" data-value="4">4</button>
+            <button type="button" class="toggle-tab" data-value="5">5</button>
+            <button type="button" class="toggle-tab" data-value="6">6</button>
+          </div>
+          <p class="t-body-sm field-hint">마을당 6~9명이 알맞아요</p>
+        </div>
+
+        <div class="field">
+          <p class="caption field-label">라운드 시간</p>
+          <div class="toggle" id="secondsChooser">
+            <button type="button" class="toggle-tab" data-value="45">45초</button>
+            <button type="button" class="toggle-tab is-on" data-value="60">60초</button>
+            <button type="button" class="toggle-tab" data-value="90">90초</button>
+            <button type="button" class="toggle-tab" data-value="120">120초</button>
+          </div>
+          <p class="t-body-sm field-hint">수업 중에 연장하거나 넘길 수 있어요</p>
+        </div>
+      </div>
+
+      <div class="field setup-demo">
+        <p class="caption field-label">데모 봇</p>
+        <div class="toggle" id="demoChooser">
+          <button type="button" class="toggle-tab is-on" data-value="0">쓰지 않음</button>
+          <button type="button" class="toggle-tab" data-value="28">28명 자동 입장</button>
+        </div>
+        <p class="t-body-sm field-hint">
+          혼자 리허설하거나 시연할 때. 가상 학생이 알아서 선택합니다 — 수업 중에도 켜고 끌 수 있어요.
+        </p>
+      </div>
+
+      <button class="btn btn-lg" id="createBtn">수업 만들기 →</button>
+
+      <p class="notice setup-notice">
+        학생 폰이 <b>같은 와이파이</b>에 있어야 합니다. 학교 와이파이가 막혀 있다면
+        <b>진행자 노트북·휴대폰의 핫스팟</b>을 켜고 거기에 학생들을 접속시키세요.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================ 진행 -->
+  <section data-screen="run" class="run hidden">
+    <header class="topbar">
+      <span class="caption topbar-brand">신뢰마을</span>
+      <span class="rule topbar-rule"></span>
+      <span class="caption topbar-item">코드 <b class="topbar-code num" id="topCode">------</b></span>
+      <span class="caption topbar-item">접속 <b class="num" id="topCount">0</b>명</span>
+      <span class="chip chip-solid demo-flag hidden" id="demoFlag">데모 봇 <b class="num" id="demoCount">0</b></span>
+      <button class="btn btn-secondary btn-sm" id="demoBtn" title="가상 학생을 넣어 혼자 리허설합니다">데모 봇</button>
+      <a class="btn btn-secondary btn-sm" id="csvBtn" download>CSV</a>
+      <button class="btn btn-secondary btn-sm topbar-new" id="newSessionBtn">새 수업</button>
+    </header>
+
+    <main class="stage-area" id="stageArea"><!-- 단계별 화면 --></main>
+
+    <footer class="controlbar">
+      <button class="btn btn-icon" id="prevBtn" title="이전 단계" aria-label="이전 단계">←</button>
+
+      <div class="progress">
+        <p class="caption progress-now">
+          <span class="num" id="stageNum">01</span>
+          <span class="progress-slash">/</span>
+          <span class="num" id="stageTotal">15</span>
+          <span class="progress-dot">·</span>
+          <span id="stageLabel">입장 대기</span>
+        </p>
+        <div class="progress-track" id="progressTrack" aria-hidden="true"></div>
+        <p class="caption progress-next" id="stageNext">다음: 워밍업 투표</p>
+      </div>
+
+      <button class="btn btn-lg controlbar-next" id="nextBtn">다음 →</button>
+    </footer>
+  </section>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/js/host/main.js"></script>
+</body>
+</html>

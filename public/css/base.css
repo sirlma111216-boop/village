@@ -1,0 +1,404 @@
+/* ============================================================
+   신뢰마을 — 디자인 시스템
+   흑백 편집 지면 위에, 손으로 오려 붙인 듯한 커다란 파스텔 색 블록.
+   크롬(버튼·본문·라벨)은 철저히 모노크롬. 이야기는 색 블록이 한다.
+   ============================================================ */
+
+:root {
+  /* ---- 색: 시스템 코어 (모노크롬) */
+  --ink: #000000;
+  --canvas: #ffffff;
+  --inverse-canvas: #000000;
+  --inverse-ink: #ffffff;
+  --hairline: #e6e6e6;
+  --hairline-soft: #f1f1f1;
+  --surface-soft: #f7f7f5;
+
+  /* ---- 색: 이야기용 색 블록 */
+  --block-lime: #dceeb1;
+  --block-lilac: #c5b0f4;
+  --block-cream: #f4ecd6;
+  --block-pink: #efd4d4;
+  --block-mint: #c8e6cd;
+  --block-coral: #f3c9b6;
+  --block-navy: #1f1d3d;
+
+  /* ---- 색: 아껴 쓰는 것들 */
+  --accent-magenta: #ff3d8b;
+  --success: #1ea64a;
+
+  /* ---- 선택지 색 (a/b/c 는 언제나 이 세 가지로 고정) */
+  --choice-a: #000000;          /* 몰래 이득 — 검정 위 흰 글씨 */
+  --choice-a-ink: #ffffff;
+  --choice-b: var(--block-lilac);
+  --choice-b-ink: #000000;
+  --choice-c: var(--block-lime);
+  --choice-c-ink: #000000;
+
+  /* ---- 모서리 */
+  --r-xs: 2px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 24px;
+  --r-xl: 32px;
+  --r-pill: 50px;
+  --r-full: 9999px;
+
+  /* ---- 간격 (8px 기준) */
+  --s-hair: 1px;
+  --s-xxs: 4px;
+  --s-xs: 8px;
+  --s-sm: 12px;
+  --s-md: 16px;
+  --s-lg: 24px;
+  --s-xl: 32px;
+  --s-xxl: 48px;
+  --s-section: 96px;
+
+  /* ---- 글꼴 (전부 로컬 번들. 외부 요청 없음) */
+  --font-sans: 'Pretendard Variable', Pretendard, Inter, -apple-system,
+               'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* 화면 크기에 따라 전체 글자 크기를 함께 키우는 배율.
+     각 화면(host/student)에서 자기 값으로 덮어쓴다. */
+  --scale: 1;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; min-height: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--canvas);
+  font-feature-settings: 'kern' 1;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, h4, p, ul, ol, figure { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+button { font-family: inherit; color: inherit; }
+img { max-width: 100%; }
+
+/* ============================================================
+   타이포그래피
+   위계는 크기보다 "굵기"가 만든다. 회색 글자는 쓰지 않는다.
+   ============================================================ */
+
+.t-display-xl {
+  font-size: calc(86px * var(--scale));
+  font-weight: 340;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+}
+.t-display-lg {
+  font-size: calc(64px * var(--scale));
+  font-weight: 340;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+.t-headline {
+  font-size: calc(26px * var(--scale));
+  font-weight: 540;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+.t-subhead {
+  font-size: calc(26px * var(--scale));
+  font-weight: 340;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+.t-card-title {
+  font-size: calc(24px * var(--scale));
+  font-weight: 700;
+  line-height: 1.45;
+}
+.t-body-lg {
+  font-size: calc(20px * var(--scale));
+  font-weight: 330;
+  line-height: 1.4;
+  letter-spacing: -0.007em;
+}
+.t-body {
+  font-size: calc(18px * var(--scale));
+  font-weight: 320;
+  line-height: 1.45;
+  letter-spacing: -0.014em;
+}
+.t-body-sm {
+  font-size: calc(16px * var(--scale));
+  font-weight: 330;
+  line-height: 1.45;
+  letter-spacing: -0.009em;
+}
+
+/* 분류를 알리는 라벨. 모노, 대문자, 자간 넓게 — 본문에는 절대 쓰지 않는다. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: calc(18px * var(--scale));
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.caption {
+  font-family: var(--font-mono);
+  font-size: calc(12px * var(--scale));
+  font-weight: 400;
+  line-height: 1.0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.num { font-variant-numeric: tabular-nums; font-feature-settings: 'kern' 1, 'tnum' 1; }
+
+/* ============================================================
+   버튼 — 모든 CTA 는 알약, 모든 아이콘 버튼은 원. 각진 버튼은 없다.
+   ============================================================ */
+
+.btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  background: var(--ink);
+  color: var(--canvas);
+  font-family: inherit;
+  font-size: calc(20px * var(--scale));
+  font-weight: 480;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  border-radius: var(--r-pill);
+  padding: calc(10px * var(--scale)) calc(24px * var(--scale));
+  min-height: 44px;
+  transition: transform 0.12s var(--ease), background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+/* 흰 알약 — 검정 알약의 짝. 테두리 한 줄로 지면 위에 세운다. */
+.btn-secondary {
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+}
+.btn-secondary:hover:not(:disabled) { border-color: var(--ink); }
+
+/* 색 블록 위에 얹는 흰 알약 (테두리 없음) */
+.btn-on-block {
+  background: var(--canvas);
+  color: var(--ink);
+  border: none;
+}
+
+/* 글자만 있는 버튼 */
+.btn-text {
+  background: transparent;
+  color: var(--ink);
+  padding: calc(8px * var(--scale)) calc(12px * var(--scale));
+  border-radius: var(--r-full);
+  font-weight: 480;
+}
+.btn-text:hover:not(:disabled) { background: var(--surface-soft); }
+
+/* 아껴 쓰는 강조 알약 — 한 화면에 하나까지 */
+.btn-promo { background: var(--accent-magenta); color: var(--canvas); }
+
+.btn-icon {
+  width: calc(40px * var(--scale));
+  height: calc(40px * var(--scale));
+  min-height: 0;
+  padding: 0;
+  border-radius: var(--r-full);
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: calc(18px * var(--scale));
+}
+
+.btn-sm {
+  font-size: calc(16px * var(--scale));
+  padding: calc(7px * var(--scale)) calc(16px * var(--scale));
+  min-height: 38px;
+}
+.btn-lg {
+  font-size: calc(24px * var(--scale));
+  padding: calc(14px * var(--scale)) calc(32px * var(--scale));
+  min-height: 56px;
+}
+
+/* ============================================================
+   면 — 색 블록과 흰 카드
+   ============================================================ */
+
+/* 이야기가 얹히는 커다란 색종이. 그림자를 쓰지 않는다 — 색이 곧 깊이다. */
+.block {
+  background: var(--block-lime);
+  color: var(--ink);
+  border-radius: var(--r-lg);
+  padding: calc(48px * var(--scale));
+}
+.block-lime   { background: var(--block-lime); }
+.block-lilac  { background: var(--block-lilac); }
+.block-cream  { background: var(--block-cream); }
+.block-pink   { background: var(--block-pink); }
+.block-mint   { background: var(--block-mint); }
+.block-coral  { background: var(--block-coral); }
+.block-navy   { background: var(--block-navy); color: var(--inverse-ink); }
+
+/* 흰 카드 — 그림자가 아니라 머리카락 굵기 선 한 줄로 세운다 */
+.card {
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  padding: calc(24px * var(--scale));
+}
+.tile {
+  background: var(--surface-soft);
+  border-radius: var(--r-md);
+  padding: calc(16px * var(--scale));
+}
+
+/* 작은 표식 */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  padding: calc(6px * var(--scale)) calc(14px * var(--scale));
+  font-size: calc(16px * var(--scale));
+  font-weight: 480;
+  white-space: nowrap;
+}
+.chip-solid { background: var(--ink); color: var(--canvas); border-color: var(--ink); }
+.chip-on-block { background: rgba(255, 255, 255, 0.72); border-color: transparent; }
+
+/* 마을 색 동그라미 — 색을 글자에 쓰지 않고 표식으로만 쓴다 */
+.swatch {
+  width: calc(16px * var(--scale));
+  height: calc(16px * var(--scale));
+  border-radius: var(--r-full);
+  display: inline-block;
+  flex: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+hr, .rule { border: none; border-top: 1px solid var(--hairline); margin: 0; }
+.rule-soft { border-top-color: var(--hairline-soft); }
+
+/* ============================================================
+   유틸
+   ============================================================ */
+
+.hidden { display: none !important; }
+.center { text-align: center; }
+.stack { display: grid; }
+.row { display: flex; align-items: center; }
+.spread { display: flex; align-items: center; justify-content: space-between; gap: var(--s-md); }
+.grow { flex: 1; }
+
+/* 안내 문구 — 크림 색 블록의 작은 형태 */
+.notice {
+  background: var(--block-cream);
+  color: var(--ink);
+  border-radius: var(--r-md);
+  padding: calc(16px * var(--scale)) calc(24px * var(--scale));
+  font-size: calc(16px * var(--scale));
+  font-weight: 330;
+  line-height: 1.55;
+}
+
+/* ============================================================
+   알림 · 연결 상태
+   ============================================================ */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--ink);
+  color: var(--canvas);
+  padding: 14px 24px;
+  border-radius: var(--r-pill);
+  font-size: 18px;
+  font-weight: 480;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s, transform 0.18s var(--ease);
+  z-index: 90;
+  max-width: min(90vw, 520px);
+  text-align: center;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { background: var(--accent-magenta); }
+
+.offline-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  background: var(--ink);
+  color: var(--canvas);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 10px;
+  z-index: 100;
+  transform: translateY(-100%);
+  transition: transform 0.22s var(--ease);
+}
+.offline-bar.show { transform: translateY(0); }
+
+/* ============================================================
+   움직임 — 가볍게. 색 블록이 들어오고 나가는 정도만.
+   ============================================================ */
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.rise { animation: rise 0.34s var(--ease) both; }
+.rise-1 { animation-delay: 0.06s; }
+.rise-2 { animation-delay: 0.12s; }
+.rise-3 { animation-delay: 0.18s; }
+
+@keyframes cut-in {
+  from { opacity: 0; transform: scale(0.98) translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.cut-in { animation: cut-in 0.4s var(--ease) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   시나리오 그림 — 파일이 있으면 사진, 없으면 이모지 색 블록
+   ============================================================ */
+
+.art-slot { line-height: 0; }
+.art-fallback {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-md);
+  line-height: 1;
+}
+.art-emoji { font-size: clamp(56px, 14vw, 130px); }
