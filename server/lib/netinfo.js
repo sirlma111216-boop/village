@@ -1,4 +1,5 @@
 import os from 'node:os';
+import { PUBLIC_URL } from '../config.js';
 
 /** 사설망 대역인가? (교실 LAN / 진행자 핫스팟) */
 function isPrivateV4(ip) {
@@ -37,3 +38,17 @@ export function primaryAddress() {
 export function joinUrl(port, address = primaryAddress()) {
   return `http://${address}:${port}/`;
 }
+
+/**
+ * 학생에게 알려 줄 주소.
+ *
+ * 인터넷에 올린 경우(PUBLIC_URL 설정)에는 그 주소를,
+ * 교실 LAN·핫스팟에서는 자동으로 찾은 로컬 IP 를 쓴다.
+ * QR 도 이 주소로 만든다.
+ */
+export function studentUrl(port) {
+  return PUBLIC_URL ? `${PUBLIC_URL}/` : joinUrl(port);
+}
+
+/** 지금 인터넷에 올라가 있는 상태인가 */
+export const isHosted = () => Boolean(PUBLIC_URL);

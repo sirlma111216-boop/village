@@ -7,7 +7,7 @@ import { Server as SocketServer } from 'socket.io';
 import { PORT } from './config.js';
 import { store } from './game/store.js';
 import { attachSockets } from './sockets/index.js';
-import { localAddresses, joinUrl } from './lib/netinfo.js';
+import { localAddresses, joinUrl, studentUrl, isHosted } from './lib/netinfo.js';
 import { STAGES } from './game/stages.js';
 import { scenariosWithArt, institutionName, warmupQuestion } from './lib/content.js';
 
@@ -17,6 +17,8 @@ const CONTENT_DIR = path.join(ROOT, 'content');
 
 const app = express();
 app.disable('x-powered-by');
+// Render·Railway 같은 호스팅은 프록시 뒤에 둔다 — https 를 제대로 인식하려면 필요
+app.set('trust proxy', 1);
 app.use(express.json({ limit: '64kb' }));
 
 // 교실 LAN 전용 — 캐시 때문에 옛 화면이 남지 않도록 HTML 은 항상 새로 받는다
@@ -33,7 +35,7 @@ app.get('/play', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html'))
 
 /** 진행자 안내용 — 어느 주소로 들어오면 되는지 */
 app.get('/api/network', (req, res) => {
-  res.json({ port: PORT, addresses: localAddresses(), url: joinUrl(PORT) });
+  res.json({ port: PORT, addresses: isHosted() ? [] : localAddresses(), url: studentUrl(PORT), hosted: isHosted() });
 });
 
 app.get('/api/stages', (req, res) => res.json(STAGES));
@@ -169,18 +171,25 @@ await store.restore();
 store.startAutosave();
 
 server.listen(PORT, '0.0.0.0', () => {
-  const addrs = localAddresses();
   const line = '─'.repeat(52);
   console.log(`\n${line}`);
   console.log('  🏘️  신뢰마을 (Trust Village) 서버가 열렸습니다');
   console.log(line);
-  console.log(`  진행자 화면 :  http://localhost:${PORT}/host`);
-  console.log(`  학생 접속   :  ${joinUrl(PORT)}`);
-  if (addrs.length > 1) {
-    console.log('  (다른 주소)  : ' + addrs.slice(1).map((a) => `http://${a.address}:${PORT}/`).join('  '));
-  }
-  if (!addrs.length) {
-    console.log('  ⚠️  네트워크 주소를 찾지 못했습니다. 와이파이/핫스팟을 켜 주세요.');
+
+  if (isHosted()) {
+    // 인터넷에 올라간 상태 — 주소는 하나뿐이고 QR 도 이 주소를 가리킨다
+    console.log(`  진행자 화면 :  ${studentUrl(PORT)}host`);
+    console.log(`  학생 접속   :  ${studentUrl(PORT)}`);
+  } else {
+    const addrs = localAddresses();
+    console.log(`  진행자 화면 :  http://localhost:${PORT}/host`);
+    console.log(`  학생 접속   :  ${joinUrl(PORT)}`);
+    if (addrs.length > 1) {
+      console.log('  (다른 주소)  : ' + addrs.slice(1).map((a) => `http://${a.address}:${PORT}/`).join('  '));
+    }
+    if (!addrs.length) {
+      console.log('  ⚠️  네트워크 주소를 찾지 못했습니다. 와이파이/핫스팟을 켜 주세요.');
+    }
   }
   console.log(`${line}\n`);
 });

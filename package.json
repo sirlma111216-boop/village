@@ -22,7 +22,7 @@
     "smoke:restore": "node tools/smoke-restore.mjs"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "^5.3.0",

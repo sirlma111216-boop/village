@@ -28,8 +28,7 @@ registerStage('lobby', (area, state, ctx) => {
     el('p', { class: 'caption' }, '코드'),
     codeBox,
     altLine,
-    el('p', { class: 't-body-sm join-hint' },
-      '같은 와이파이가 안 되면 진행자 핫스팟을 켜고 거기로 접속하세요.'),
+    el('p', { class: 't-body-sm join-hint' }, ''),
   );
 
   const countNode = el('span', { class: 'roster-num' }, '0');
@@ -57,9 +56,17 @@ registerStage('lobby', (area, state, ctx) => {
     codeBox.textContent = s.code;
     if (ctx.join?.qr) qrImg.src = ctx.join.qr;
     if (ctx.join?.url) urlLine.textContent = ctx.join.url;
-    const others = (ctx.join?.addresses || []).slice(1);
-    altLine.textContent = others.length
-      ? `다른 주소 ${others.map((a) => `http://${a}:${ctx.join.port}/`).join('  ')}` : '';
+    // 인터넷에 올라간 경우엔 주소가 하나뿐이라 와이파이 안내가 필요 없다
+    const hint = joinPanel.querySelector('.join-hint');
+    if (ctx.join?.hosted) {
+      hint.textContent = '아무 인터넷에서나 들어올 수 있어요.';
+      altLine.textContent = '';
+    } else {
+      hint.textContent = '같은 와이파이가 안 되면 진행자 핫스팟을 켜고 거기로 접속하세요.';
+      const others = (ctx.join?.addresses || []).slice(1);
+      altLine.textContent = others.length
+        ? `다른 주소 ${others.map((a) => `http://${a}:${ctx.join.port}/`).join('  ')}` : '';
+    }
 
     const byVillage = s.villages.map(() => []);
     for (const p of s.roster) (byVillage[p.villageIndex] ||= []).push(p);

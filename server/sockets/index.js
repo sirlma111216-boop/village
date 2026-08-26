@@ -1,6 +1,6 @@
 import { store } from '../game/store.js';
 import { normalizeCode } from '../lib/code.js';
-import { localAddresses, joinUrl } from '../lib/netinfo.js';
+import { localAddresses, studentUrl, isHosted } from '../lib/netinfo.js';
 import { qrDataUrl } from '../lib/qr.js';
 import { cleanReflection } from '../lib/clean.js';
 import { WARMUP_QUESTIONS } from '../lib/content.js';
@@ -289,9 +289,10 @@ export function attachSockets(io, { port }) {
   // ---------------------------------------------------------------- 공통
 
   async function joinInfo(code) {
-    const addresses = localAddresses().map((a) => a.address);
-    const url = joinUrl(port);
-    return { code, url, qr: await qrDataUrl(`${url}?c=${code}`), addresses, port };
+    const url = studentUrl(port);
+    // 인터넷에 올린 경우엔 로컬 IP 목록이 의미가 없다 (컨테이너 내부 주소일 뿐)
+    const addresses = isHosted() ? [] : localAddresses().map((a) => a.address);
+    return { code, url, qr: await qrDataUrl(`${url}?c=${code}`), addresses, port, hosted: isHosted() };
   }
 
   function asHost(payload, cb) {
