@@ -288,11 +288,13 @@ export function attachSockets(io, { port }) {
 
   // ---------------------------------------------------------------- 공통
 
-  async function joinInfo(code) {
-    const url = studentUrl(port);
+  async function joinInfo(code, socket) {
+    const headers = socket?.handshake?.headers || {};
+    const url = studentUrl(port, headers);
+    const hosted = isHosted(headers);
     // 인터넷에 올린 경우엔 로컬 IP 목록이 의미가 없다 (컨테이너 내부 주소일 뿐)
-    const addresses = isHosted() ? [] : localAddresses().map((a) => a.address);
-    return { code, url, qr: await qrDataUrl(`${url}?c=${code}`), addresses, port, hosted: isHosted() };
+    const addresses = hosted ? [] : localAddresses().map((a) => a.address);
+    return { code, url, qr: await qrDataUrl(`${url}?c=${code}`), addresses, port, hosted };
   }
 
   function asHost(payload, cb) {
@@ -346,7 +348,7 @@ export function attachSockets(io, { port }) {
         code: s.code,
         hostKey: s.hostKey,
         state: s.hostState(),
-        join: await joinInfo(s.code),
+        join: await joinInfo(s.code, socket),
       });
     });
 
@@ -356,7 +358,7 @@ export function attachSockets(io, { port }) {
       socket.data.role = 'host';
       socket.data.code = s.code;
       socket.join(hostRoom(s.code));
-      reply(cb, { ok: true, code: s.code, state: s.hostState(), join: await joinInfo(s.code) });
+      reply(cb, { ok: true, code: s.code, state: s.hostState(), join: await joinInfo(s.code, socket) });
     });
 
     /**

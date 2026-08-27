@@ -1,23 +1,17 @@
 # Render 한 번에 배포하기 (https://render.com)
 #
-# 1. GitHub 저장소를 Render 에 연결한다
-# 2. New → Blueprint → 이 파일이 자동으로 읽힌다
-# 3. 배포가 끝나면 나온 주소를 PUBLIC_URL 환경변수에 넣고 한 번 더 배포한다
-#    (QR 이 그 주소를 가리키게 하려면 필요하다)
+# New → Blueprint → 이 저장소를 고르면 끝입니다.
+# 설정할 환경변수는 없습니다 — 진행자가 접속한 주소를 서버가 그대로 읽어 QR 을 만듭니다.
 
 services:
   - type: web
     name: trust-village
     runtime: node
-    plan: free
-    region: singapore          # 한국에서 가장 가까운 무료 리전
+    plan: free                 # 수업·시연에 쓸 거라면 starter 로 올리세요 (잠들지 않음)
+    region: singapore          # 한국에서 가장 가까운 리전
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
         value: "22"
-      # 배포 주소가 정해진 뒤 Render 대시보드에서 채운다
-      #   예: https://trust-village.onrender.com
-      - key: PUBLIC_URL
-        sync: false

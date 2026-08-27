@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { Server as SocketServer } from 'socket.io';
 
-import { PORT } from './config.js';
+import { PORT, PUBLIC_URL } from './config.js';
 import { store } from './game/store.js';
 import { attachSockets } from './sockets/index.js';
 import { localAddresses, joinUrl, studentUrl, isHosted } from './lib/netinfo.js';
@@ -21,7 +21,7 @@ app.disable('x-powered-by');
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '64kb' }));
 
-// 교실 LAN 전용 — 캐시 때문에 옛 화면이 남지 않도록 HTML 은 항상 새로 받는다
+// 캐시 때문에 옛 화면이 남지 않도록 HTML 은 항상 새로 받는다
 app.use(express.static(PUBLIC_DIR, {
   extensions: ['html'],
   setHeaders(res, filePath) {
@@ -33,9 +33,10 @@ app.use('/content', express.static(CONTENT_DIR, { setHeaders: (res) => res.setHe
 app.get('/host', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'host.html')));
 app.get('/play', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
 
-/** 진행자 안내용 — 어느 주소로 들어오면 되는지 */
+/** 진행자 안내용 — 학생이 어느 주소로 들어오면 되는지 */
 app.get('/api/network', (req, res) => {
-  res.json({ port: PORT, addresses: isHosted() ? [] : localAddresses(), url: studentUrl(PORT), hosted: isHosted() });
+  const hosted = isHosted(req.headers);
+  res.json({ port: PORT, addresses: hosted ? [] : localAddresses(), url: studentUrl(PORT, req.headers), hosted });
 });
 
 app.get('/api/stages', (req, res) => res.json(STAGES));
@@ -159,7 +160,7 @@ app.get('/api/health', (req, res) => {
 
 const server = http.createServer(app);
 const io = new SocketServer(server, {
-  // 교실 와이파이가 불안정할 때를 대비해 여유 있게
+  // 학교 와이파이·LTE 가 불안정해도 끊기지 않도록 여유 있게
   pingInterval: 20_000,
   pingTimeout: 25_000,
   maxHttpBufferSize: 1e5,
@@ -176,10 +177,9 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log('  🏘️  신뢰마을 (Trust Village) 서버가 열렸습니다');
   console.log(line);
 
-  if (isHosted()) {
-    // 인터넷에 올라간 상태 — 주소는 하나뿐이고 QR 도 이 주소를 가리킨다
-    console.log(`  진행자 화면 :  ${studentUrl(PORT)}host`);
-    console.log(`  학생 접속   :  ${studentUrl(PORT)}`);
+  if (PUBLIC_URL) {
+    console.log(`  진행자 화면 :  ${PUBLIC_URL}/host`);
+    console.log(`  학생 접속   :  ${PUBLIC_URL}/`);
   } else {
     const addrs = localAddresses();
     console.log(`  진행자 화면 :  http://localhost:${PORT}/host`);

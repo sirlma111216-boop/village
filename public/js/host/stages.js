@@ -59,10 +59,10 @@ registerStage('lobby', (area, state, ctx) => {
     // 인터넷에 올라간 경우엔 주소가 하나뿐이라 와이파이 안내가 필요 없다
     const hint = joinPanel.querySelector('.join-hint');
     if (ctx.join?.hosted) {
-      hint.textContent = '아무 인터넷에서나 들어올 수 있어요.';
+      hint.textContent = '어디서든 이 주소로 들어올 수 있어요.';
       altLine.textContent = '';
     } else {
-      hint.textContent = '같은 와이파이가 안 되면 진행자 핫스팟을 켜고 거기로 접속하세요.';
+      hint.textContent = '학생 폰이 이 컴퓨터와 같은 와이파이에 있어야 해요.';
       const others = (ctx.join?.addresses || []).slice(1);
       altLine.textContent = others.length
         ? `다른 주소 ${others.map((a) => `http://${a}:${ctx.join.port}/`).join('  ')}` : '';
