@@ -1,5 +1,5 @@
 // 개발용 점검 스크립트 (수업 실행과 무관): node tools/smoke-session.mjs
-import { Session } from '../server/game/session.js';
+import { Session } from '../shared/game/session.js';
 const s = new Session('ABC234');
 for (let i = 0; i < 10; i++) s.addPlayer();
 console.log('sizes(4villages):', s.villageSizes());

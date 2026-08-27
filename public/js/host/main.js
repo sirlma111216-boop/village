@@ -1,7 +1,7 @@
 // 진행자 화면 — 서버 상태를 받아 그리기만 한다. 판단은 전부 서버가 한다.
 
 import { $, $$, showScreen, toast, el } from '../lib/dom.js';
-import { socket, ask, mountConnectionBanner } from '../lib/net.js';
+import { socket, ask, connectTo, mountConnectionBanner } from '../lib/net.js';
 import { hostSave, hostLoad, hostClear } from '../lib/storage.js';
 import { renderStage } from './render.js';
 import './stages.js';    // 입장 대기 · 워밍업 · 스토리 · 규칙
@@ -42,7 +42,11 @@ $('#createBtn').addEventListener('click', async () => {
   const btn = $('#createBtn');
   btn.disabled = true;
   try {
+    // 수업 코드를 먼저 받는다 — 서버에서 수업 하나가 독립된 방 하나라 코드가 있어야 붙는다
+    const { code } = await (await fetch('/api/new-code')).json();
+    connectTo(code);
     const res = await ask('host:create', {
+      code,
       villageCount: getVillageCount(),
       roundSeconds: getRoundSeconds(),
     });
@@ -223,6 +227,7 @@ async function attachSaved(manual = false) {
   const saved = hostLoad();
   if (!saved?.code || !saved?.hostKey) return false;
   try {
+    connectTo(saved.code);
     const res = await ask('host:attach', { code: saved.code, hostKey: saved.hostKey });
     ctx.code = res.code;
     ctx.hostKey = saved.hostKey;

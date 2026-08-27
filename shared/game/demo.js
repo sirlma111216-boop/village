@@ -18,7 +18,7 @@
 import { CHOICE_KEYS } from '../config.js';
 import { getStage } from './stages.js';
 import { startRound, submitChoice, hasSubmitted, pledgeForRound, institutionActive } from './engine.js';
-import { INSTITUTION_IDS } from '../lib/content.js';
+import { INSTITUTION_IDS } from '../content.js';
 
 export const DEMO_DEFAULT_COUNT = 28;
 export const DEMO_MAX_COUNT = 40;

@@ -12,8 +12,8 @@
 |---|---|
 | 1 | **개인정보 0 수집.** 이름·학번·전화번호·이메일·로그인 없음. 학생 식별은 서버가 자동 배정하는 익명 닉네임(형용사+동물)뿐. |
 | 2 | **개인 선택 비공개.** 누가 무엇을 골랐는지는 어떤 화면에도, 진행자에게도, 로그/스냅샷/CSV에도 남기지 않는다. 서버 메모리에만 두고 집계 후 카운트만 보존. |
-| 3 | **평범한 웹앱.** 배포한 주소로 누구나 접속한다. 진행자가 보고 있는 주소를 서버가 그대로 읽어 QR 을 만들므로 별도 설정이 없다. 외부 API·생성형 AI 호출은 쓰지 않는다(폰트도 로컬 번들 — 빠르고 키 관리가 없다).<br>*(같은 코드가 노트북 로컬 실행도 지원한다. 인터넷이 끊긴 교실에서는 그대로 백업 수단이 된다.)* |
-| 4 | **외부 DB 금지.** 상태는 서버 메모리. 30초마다 + 라운드 종료마다 `data/sessions/<코드>.json` 스냅샷. 재시작 시 복구. |
+| 3 | **평범한 웹앱.** 배포한 주소로 누구나 접속한다. 진행자가 보고 있는 주소를 서버가 그대로 읽어 QR 을 만들므로 설정할 환경변수가 없다. 외부 API·생성형 AI 호출은 쓰지 않는다(폰트도 로컬 번들). |
+| 4 | **외부 DB 금지.** 수업 하나 = Durable Object 하나. 상태는 그 안의 메모리 + DO 저장소. 재시작·하이버네이션 뒤에도 복구. |
 | 5 | **서버가 단일 진실 소스.** 진행자/학생 화면 새로고침에도 상태 유지. |
 | 6 | **특정 브랜드명 금지.** 시나리오에 실제 메신저/상점/앱 이름을 쓰지 않는다. |
 
@@ -21,9 +21,10 @@
 
 ## 1. 기술 스택 (고정)
 
-- **서버**: Node.js + Express + Socket.IO — 단일 프로세스, 단일 포트.
+- **런타임**: Cloudflare Workers + Durable Objects. 수업 하나가 DO 하나이고, 그 안에 상태와 WebSocket 이 함께 있다.
 - **프런트**: 빌드 도구 없는 순수 HTML/CSS/JS (ES modules). 같은 서버에서 정적 서빙.
-- **의존성**: `express`, `socket.io`, `qrcode`(서버측 로컬 QR 생성) 정도로 최소화.
+- **실시간**: 표준 WebSocket + 작은 JSON 규약(worker/protocol.js). 라이브러리 없음.
+- **의존성**: qrcode(순수 JS 경로로 SVG 생성)와 폰트 두 개뿐.
 - **폰트/아이콘**: 로컬 번들 또는 시스템 폰트 + 유니코드 이모지만 사용 (무료 라이선스).
 
 ---
@@ -31,7 +32,7 @@
 ## 2. 게임 규칙
 
 ### 2.1 세션 · 마을
-- 진행자가 세션 생성 → **6자리 코드** 발급 (혼동 문자 0/O/1/I 제외).
+- 진행자가 세션 생성 → **6자리 코드** 발급 (혼동 문자 0/O/1/I/L 제외). 코드가 곧 Durable Object 이름이다.
 - 학생은 QR 또는 코드로 입장. **입장 순서대로 마을에 라운드로빈 배정**(마을 수 2~6, 기본 4).
 - 학생 개인 자산 = **코인**, 마을 자산 = **신뢰지수**(0~100, 시작 60).
 
@@ -95,7 +96,7 @@ lobby → warmup → story → rules → practice
 ## 4. 화면
 
 ### 4.1 진행자 (노트북/프로젝터 — 큰 글씨·고대비)
-- 세션 생성 → 접속 QR(**로컬 IP 자동 감지**) + 6자리 코드 + 실시간 입장 인원
+- 세션 생성 → 접속 QR(**지금 접속한 주소 자동 반영**) + 6자리 코드 + 실시간 입장 인원
 - 라운드 화면: 시나리오 웹툰 + 지문 + 남은 시간 + **제출 인원 실시간 카운트**(누가 냈는지는 표시하지 않음)
 - 집계 화면: 마을별 신뢰지수 **가로 막대(애니메이션)**, 개인 코인 TOP3(익명)
 - 최종 발표: 라운드별 **정직 선택률(%)** 막대 그래프 + **마을회의 시점 표시선**
@@ -113,7 +114,8 @@ lobby → warmup → story → rules → practice
 - 소감 입력(익명·100자), 하트 누르기, 서약 버튼
 
 ### 4.3 공통 디자인
-한국어 UI · 밝고 깨끗한 **파랑-민트** 계열 · 이모지 아이콘 · 큰 터치 영역 · 가벼운 애니메이션.
+한국어 UI · 흑백 편집 지면 + 커다란 파스텔 색 블록 · 알약 버튼 · 큰 터치 영역 · 가벼운 애니메이션.
+토큰은 `public/css/base.css` 한 곳. (디자인 근거: Figma 마케팅 사이트 분석 문서)
 
 ---
 
@@ -132,9 +134,9 @@ lobby → warmup → story → rules → practice
 
 - **학생 재접속**: `localStorage`에 세션 토큰 저장 → 절전/새로고침 시 같은 닉네임·마을·진행 상태로 자동 복구.
 - **늦은 입장**: 진행 중인 단계에 즉시 합류.
-- **진행자 새로고침**: 서버 상태로 완전 복원.
+- **진행자 새로고침**: 서버 상태로 완전 복원 (localStorage 의 코드·열쇠로 자동 재접속).
 - **34명 동시 제출**: 이벤트는 단순하게, **브로드캐스트는 집계값만**(개인 이벤트는 해당 소켓에만).
-- 접속 안내 문구는 상황에 맞게 바뀐다 (배포 주소면 그냥 주소, 노트북 로컬이면 같은 와이파이 안내).
+- **하이버네이션 대비**: Durable Object 가 잠들었다 깨어나도 소켓 역할과 진행 중인 라운드가 이어진다.
 
 ---
 
@@ -142,19 +144,21 @@ lobby → warmup → story → rules → practice
 
 ```
 village/
-├── CLAUDE.md
-├── package.json
-├── server/
-│   ├── index.js          # Express + Socket.IO 부트스트랩
-│   ├── config.js         # 게임 상수
-│   ├── lib/              # nickname, code, netinfo, persist, qr
-│   ├── game/             # session(상태), stages(상태머신), engine(라운드)
-│   └── sockets/          # 소켓 핸들러
-├── public/               # 정적 프런트 (빌드 없음)
-│   ├── index.html  host.html  student.html
-│   ├── css/  js/  illustrations/
+├── CLAUDE.md  README.md  wrangler.jsonc
+├── worker/               # Cloudflare 진입점
+│   ├── index.js          #   정적 파일 · /api/* · /ws → Durable Object
+│   ├── session-do.js     #   수업 하나 = DO 하나 (상태·소켓·저장·알람)
+│   ├── protocol.js       #   WebSocket 메시지 규약
+│   └── qr.js             #   QR (SVG, 순수 JS)
+├── shared/               # 런타임과 무관한 게임 두뇌 (Node·Workers 공용)
+│   ├── config.js  content.js
+│   ├── game/             #   session · stages · engine · demo · villages
+│   └── lib/              #   nickname · code · clean
+├── public/               # 빌드 없는 프런트 (Workers Assets 가 서빙)
+│   ├── index.html  host.html
+│   └── css/  js/  fonts/  illustrations/
 ├── content/              # 교체 가능한 JSON 콘텐츠
-└── data/sessions/        # 스냅샷 (.gitignore)
+└── tools/                # 점검 스크립트
 ```
 
 ---
@@ -184,7 +188,7 @@ village/
 
 제도가 붙으면 "몰래 이득"에서 정직 쪽으로 옮겨 간다 — 감사제 0.22 · 장부제 0.16 · 서약제 0.13.
 몇 명(7%)은 일부러 제출하지 않아 미제출자 처리 경로까지 시연에 드러난다.
-구현은 `server/game/demo.js`.
+구현은 `shared/game/demo.js`.
 
 ---
 
@@ -192,8 +196,7 @@ village/
 
 ```bash
 npm install
-npm start          # http://localhost:3000
+npm run dev        # http://localhost:8787
+npm run deploy     # Cloudflare 에 올린다
 ```
 진행자: `/host` · 학생: `/` (QR 이 지금 접속한 주소를 그대로 가리킴)
-
-배포는 일반 Node 호스팅(Render·Railway 등). 서버리스는 실시간 소켓 때문에 쓸 수 없다.

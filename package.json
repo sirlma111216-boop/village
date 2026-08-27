@@ -4,34 +4,28 @@
   "private": true,
   "description": "신뢰마을(Trust Village) — 교실용 실시간 게임 웹앱",
   "type": "module",
-  "main": "server/index.js",
   "scripts": {
-    "start": "node server/index.js",
-    "dev": "node --watch server/index.js",
-    "bots": "node tools/bots.mjs",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
     "fonts": "node tools/sync-fonts.mjs",
     "postinstall": "node tools/sync-fonts.mjs",
     "smoke:unit": "node tools/smoke-session.mjs",
     "smoke:engine": "node tools/smoke-engine.mjs",
-    "smoke:flow": "node tools/smoke-flow.mjs",
-    "smoke:round": "node tools/smoke-round.mjs",
-    "smoke:host": "node tools/smoke-host.mjs",
-    "smoke:student": "node tools/smoke-student.mjs",
-    "smoke:council": "node tools/smoke-council.mjs",
-    "smoke:demo": "node tools/smoke-demo.mjs",
-    "smoke:restore": "node tools/smoke-restore.mjs"
+    "smoke:worker": "node tools/smoke-worker.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
-    "express": "^4.19.2",
     "pretendard": "^1.3.9",
-    "qrcode": "^1.5.4",
-    "socket.io": "^4.7.5"
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
-    "socket.io-client": "^4.8.3"
+    "wrangler": "^4.126.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "workerd@1.20260825.1": true
   }
 }

@@ -1,13 +1,19 @@
-import { randomInt } from 'node:crypto';
 import { CODE_ALPHABET, CODE_LENGTH } from '../config.js';
+
+/** Node 20+ 와 Workers 둘 다 표준 Web Crypto 를 가지고 있다 */
+function randomIndex(max) {
+  const buf = new Uint32Array(1);
+  const limit = Math.floor(0xFFFFFFFF / max) * max;   // 나머지 편향 제거
+  let v;
+  do { crypto.getRandomValues(buf); v = buf[0]; } while (v >= limit);
+  return v % max;
+}
 
 /** 6자리 세션 코드. 이미 쓰이는 코드는 피한다. */
 export function makeSessionCode(isTaken = () => false) {
   for (let attempt = 0; attempt < 500; attempt++) {
     let code = '';
-    for (let i = 0; i < CODE_LENGTH; i++) {
-      code += CODE_ALPHABET[randomInt(CODE_ALPHABET.length)];
-    }
+    for (let i = 0; i < CODE_LENGTH; i++) code += CODE_ALPHABET[randomIndex(CODE_ALPHABET.length)];
     if (!isTaken(code)) return code;
   }
   throw new Error('세션 코드를 만들 수 없습니다.');
@@ -21,15 +27,13 @@ export function makeSessionCode(isTaken = () => false) {
 export function normalizeCode(raw) {
   const cleaned = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   let out = '';
-  for (const ch of cleaned) {
-    if (CODE_ALPHABET.includes(ch)) out += ch;
-  }
+  for (const ch of cleaned) if (CODE_ALPHABET.includes(ch)) out += ch;
   return out.slice(0, CODE_LENGTH);
 }
 
 /** 재접속용 토큰 — 개인정보가 아닌 무작위 문자열 */
 export function makeToken() {
   let t = '';
-  for (let i = 0; i < 24; i++) t += CODE_ALPHABET[randomInt(CODE_ALPHABET.length)];
+  for (let i = 0; i < 24; i++) t += CODE_ALPHABET[randomIndex(CODE_ALPHABET.length)];
   return t.toLowerCase();
 }

@@ -7,7 +7,7 @@ import { makeNickname, nicknameEmoji } from '../lib/nickname.js';
 import { makeToken } from '../lib/code.js';
 import { villagePreset } from './villages.js';
 import { FIRST_STAGE, getStage, nextStageId, prevStageId, stageIndex, STAGES } from './stages.js';
-import { INSTITUTION_IDS, isInstitution } from '../lib/content.js';
+import { INSTITUTION_IDS, isInstitution } from '../content.js';
 import { armRound, submittedCount, hasSubmitted, myChoice, personalOutcome, villageLiveTally, villagePledgeCount, institutionActive } from './engine.js';
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -86,7 +86,7 @@ export class Session {
         name: preset.name,
         emoji: preset.emoji,
         color: preset.color,     // 면(배경)으로만 쓴다. 글자는 언제나 검정.
-        token: preset.token,
+        tone: preset.tone,
         trust: old ? old.trust : TRUST_START,
         institution: old ? old.institution : null,
       });
@@ -391,7 +391,7 @@ export class Session {
       name: v.name,
       emoji: v.emoji,
       color: v.color,
-      token: v.token,
+      tone: v.tone,
       coins: this.villageMembers(v.index).reduce((sum, p) => sum + p.coins, 0),
       size: this.villageMembers(v.index).length,
       trust: v.trust,
@@ -595,7 +595,9 @@ export class Session {
       s.players.set(p.token, {
         ...p,
         lastSeen: 0,
-        connected: false,     // 복구 직후엔 아무도 붙어 있지 않다
+        // 복구 직후 사람 학생은 아직 붙기 전이다. 데모 봇은 소켓이 없는
+        // 서버 안의 존재라 언제나 "있는" 것으로 친다.
+        connected: Boolean(p.isDemo),
         socketId: null,
         roundPledges: p.roundPledges || {},
         hearted: p.hearted || [],

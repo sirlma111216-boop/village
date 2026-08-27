@@ -5,7 +5,7 @@
 // 닉네임·마을·코인·현재 단계는 매번 서버에서 새로 받아 온다.
 
 import { $, showScreen, toast, el } from '../lib/dom.js';
-import { socket, ask, mountConnectionBanner } from '../lib/net.js';
+import { socket, ask, connectTo, mountConnectionBanner } from '../lib/net.js';
 import { studentSave, studentLoad, studentClear } from '../lib/storage.js';
 import { createScreen } from './screens.js';
 import './wrapup.js';   // 마을회의 · 소감 · 서약 화면 등록
@@ -57,6 +57,7 @@ async function doJoin(rawCode, token = null, silent = false) {
   if (!silent) { joinBtn.disabled = true; joinBtn.textContent = '들어가는 중…'; }
 
   try {
+    connectTo(code);
     const res = await ask('student:join', { code, token });
     ctx.code = code;
     ctx.token = res.token;

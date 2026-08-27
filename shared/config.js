@@ -1,15 +1,5 @@
 // 신뢰마을 — 게임 상수 (한 곳에서만 고친다)
 
-export const PORT = Number(process.env.PORT) || 3000;
-
-/**
- * 인터넷에 올렸을 때 학생에게 알려 줄 주소.
- * 배포 환경에서 PUBLIC_URL 을 넣어 두면 QR·접속 안내가 이 주소를 가리킨다.
- * 비워 두면 예전처럼 로컬 IP 를 자동으로 찾는다 (교실 LAN·핫스팟 모드).
- *   예: PUBLIC_URL=https://trust-village.onrender.com
- */
-export const PUBLIC_URL = (process.env.PUBLIC_URL || '').trim().replace(/\/+$/, '');
-
 /** 세션 코드: 헷갈리는 0/O/1/I/L 제외 */
 export const CODE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 export const CODE_LENGTH = 6;

@@ -2,8 +2,13 @@
 
 const cache = new Map();
 
-/** 시나리오만 서버가 삽화 경로까지 붙여 준다 */
-const URL_FOR = { scenarios: '/api/scenarios' };
+/** 콘텐츠는 서버가 내보낸다 (시나리오는 삽화 경로까지 붙여서) */
+const URL_FOR = {
+  scenarios: '/api/scenarios',
+  warmup: '/api/warmup',
+  story: '/api/story',
+  institutions: '/api/institutions',
+};
 
 async function load(name) {
   if (cache.has(name)) return cache.get(name);

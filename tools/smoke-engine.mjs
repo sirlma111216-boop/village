@@ -1,10 +1,10 @@
 // 라운드 엔진 점검 (서버 없이): 신뢰지수 계산 · 제도 효과 · 익명성
 // 사용: node tools/smoke-engine.mjs
-import { Session } from '../server/game/session.js';
+import { Session } from '../shared/game/session.js';
 import {
   startRound, submitChoice, closeRound, abortRound, extendRound,
   personalOutcome, villageLiveTally, pledgeForRound, roundPhase, remainingMs,
-} from '../server/game/engine.js';
+} from '../shared/game/engine.js';
 
 let bad = 0;
 const check = (label, pass, extra = '') => {
