@@ -351,10 +351,13 @@ registerStage('pledge', (area, state) => {
   ));
 
   function update(s) {
+    // 분모는 "지금 여기 있는 사람" — 학생 화면의 카운터와 같은 기준이다.
+    // 간 사람까지 세면 막대가 끝내 차지 않는다.
     const n = s.pledgeCount || 0;
+    const here = Math.max(s.connectedCount || 0, n);
     countUp(num, n, 600);
-    total.textContent = `/ ${s.playerCount}명`;
-    fill.style.width = s.playerCount ? `${(n / s.playerCount) * 100}%` : '0%';
+    total.textContent = `/ ${here}명`;
+    fill.style.width = here ? `${(n / here) * 100}%` : '0%';
   }
 
   area._update = update;

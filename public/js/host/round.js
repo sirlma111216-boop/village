@@ -1,7 +1,7 @@
 // 진행자 라운드 화면 — 시나리오 · 남은 시간 · 제출 인원 · 마감 결과.
 // 개인의 선택은 그리지 않는다. 그릴 데이터 자체가 오지 않는다.
 
-import { el, countUp } from '../lib/dom.js';
+import { el, mount, countUp } from '../lib/dom.js';
 import { getScenario, scenarioArt, CHOICE_META, CHOICE_ORDER } from '../lib/content.js';
 import { syncClock, startCountdown, formatClock } from '../lib/clock.js';
 import { registerStage, trustBars, mixBar, choiceLegend, swatch } from './render.js';
@@ -91,7 +91,7 @@ registerStage('round', (area, state, ctx) => {
     if (!results) return;
 
     const deltas = Object.fromEntries(results.villages.map((v) => [v.index, v.trustDelta]));
-    resultPanel.append(
+    mount(resultPanel,
       el('p', { class: 'eyebrow' }, results.scoring ? '마을 신뢰지수' : '연습 결과 · 점수 미반영'),
       results.scoring ? trustBars(villages, { deltas }) : null,
       el('p', { class: 'eyebrow', style: { marginTop: 'var(--s-sm)' } }, '마을별 선택'),

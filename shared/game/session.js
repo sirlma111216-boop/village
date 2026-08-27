@@ -503,6 +503,7 @@ export class Session {
         trust: x.trust, size: sizes[i] || 0,
       })),
       playerCount: this.playerCount,
+      connectedCount: this.connectedCount,
       revealStep: this.revealStep,
       warmup: this.warmup,
       myWarmup: this.myWarmupVotes(token),   // 본인이 무엇을 골랐는지만

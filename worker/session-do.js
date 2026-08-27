@@ -73,6 +73,7 @@ export class VillageSession extends DurableObject {
         }
         if (live.outcomes) this.session.personalOutcomes = new Map(Object.entries(live.outcomes));
       }
+      this.syncConnected();
       return this.session;
     })();
     return this.loaded;
@@ -379,6 +380,23 @@ export class VillageSession extends DurableObject {
   webSocketClose(ws) { this.onGone(ws); }
   webSocketError(ws) { this.onGone(ws); }
 
+  /**
+   * 지금 누가 접속 중인지는 저장소가 아니라 열려 있는 소켓이 답이다.
+   * 스냅샷은 사람 학생을 전부 끊긴 것으로 되살리므로(그때는 정말 그러니까),
+   * 잠에서 깬 직후 한 번 맞춰 준다. 이걸 빼먹으면 폰을 들고 있는 학생이
+   * 진행자 화면에서 사라지고, 제출 인원이 "3 / 0" 처럼 보인다.
+   */
+  syncConnected() {
+    const s = this.session;
+    if (!s) return;
+    for (const ws of this.ctx.getWebSockets()) {
+      const meta = this.metaOf(ws);
+      if (meta?.role !== 'student' || !meta.token) continue;
+      const player = s.getPlayer(meta.token);
+      if (player) player.connected = true;
+    }
+  }
+
   onGone(ws) {
     const meta = this.metaOf(ws);
     this.roles.delete(ws);
@@ -408,7 +426,7 @@ export class VillageSession extends DurableObject {
     const origin = this.metaOf(ws).origin || '';
     const url = origin ? `${origin}/` : '/';
     const hosted = !/^https?:\/\/(localhost|127\.|\d+\.\d+\.\d+\.\d+)/.test(origin);
-    return { code: s.code, url, qr: qrDataUrl(`${url}?c=${s.code}`), addresses: [], hosted };
+    return { code: s.code, url, qr: qrDataUrl(`${url}?c=${s.code}`), hosted };
   }
 
   async handle(ws, msg) {
@@ -593,6 +611,15 @@ export class VillageSession extends DurableObject {
           if (other !== ws && om?.token === player.token) {
             this.send(other, push('replaced', {}));
             this.setMeta(other, { ...om, token: null, role: null });
+          }
+        }
+
+        // 이 소켓이 다른 학생으로 붙어 있었다면, 그 학생은 이제 여기 없다
+        if (meta.token && meta.token !== player.token) {
+          const previous = s.getPlayer(meta.token);
+          if (previous) {
+            previous.connected = false;
+            previous.lastSeen = Date.now();
           }
         }
 

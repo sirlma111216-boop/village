@@ -292,9 +292,10 @@ socket.on('reflect:heart', ({ id, hearts }) => {
   screen?.update?.(ctx.state);
 });
 
-socket.on('pledge:count', ({ pledgeCount }) => {
+socket.on('pledge:count', ({ pledgeCount, total }) => {
   if (!ctx.state) return;
   ctx.state.pledgeCount = pledgeCount;
+  if (typeof total === 'number') ctx.state.connectedCount = total;
   screen?.update?.(ctx.state);
 });
 

@@ -12,7 +12,6 @@ registerStage('lobby', (area, state, ctx) => {
   const qrImg = el('img', { alt: '접속 QR 코드', src: ctx.join?.qr || '' });
   const codeBox = el('div', { class: 'join-code', title: '클릭하면 복사' });
   const urlLine = el('div', { class: 'join-url' });
-  const altLine = el('div', { class: 'join-alt' });
 
   codeBox.addEventListener('click', async () => {
     try {
@@ -27,7 +26,6 @@ registerStage('lobby', (area, state, ctx) => {
     urlLine,
     el('p', { class: 'caption' }, '코드'),
     codeBox,
-    altLine,
     el('p', { class: 't-body-sm join-hint' }, ''),
   );
 
@@ -56,17 +54,11 @@ registerStage('lobby', (area, state, ctx) => {
     codeBox.textContent = s.code;
     if (ctx.join?.qr) qrImg.src = ctx.join.qr;
     if (ctx.join?.url) urlLine.textContent = ctx.join.url;
-    // 인터넷에 올라간 경우엔 주소가 하나뿐이라 와이파이 안내가 필요 없다
+    // 배포된 주소면 그대로 안내한다. 내 컴퓨터에서 띄운 것이면 폰은 아직 못 들어온다.
     const hint = joinPanel.querySelector('.join-hint');
-    if (ctx.join?.hosted) {
-      hint.textContent = '어디서든 이 주소로 들어올 수 있어요.';
-      altLine.textContent = '';
-    } else {
-      hint.textContent = '학생 폰이 이 컴퓨터와 같은 와이파이에 있어야 해요.';
-      const others = (ctx.join?.addresses || []).slice(1);
-      altLine.textContent = others.length
-        ? `다른 주소 ${others.map((a) => `http://${a}:${ctx.join.port}/`).join('  ')}` : '';
-    }
+    hint.textContent = ctx.join?.hosted
+      ? '어디서든 이 주소로 들어올 수 있어요.'
+      : '지금은 이 컴퓨터에서만 열려요 — 미리보기입니다.';
 
     const byVillage = s.villages.map(() => []);
     for (const p of s.roster) (byVillage[p.villageIndex] ||= []).push(p);

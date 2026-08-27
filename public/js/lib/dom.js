@@ -19,6 +19,15 @@ export function el(tag, props = {}, ...children) {
   return node;
 }
 
+/** el() 처럼 null·false 자식을 걸러서 붙인다 (node.append 는 "null" 을 글자로 찍는다) */
+export function mount(node, ...children) {
+  for (const c of children.flat()) {
+    if (c === null || c === undefined || c === false) continue;
+    node.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  return node;
+}
+
 export function show(node, on = true) {
   if (node) node.classList.toggle('hidden', !on);
 }
@@ -59,4 +68,8 @@ export function countUp(node, to, ms = 400) {
     if (t < 1 && Number(node.dataset.value) === to) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
+  // 프레임이 한 번도 오지 않는 경우(창이 가려졌을 때 등)에도 숫자는 맞아야 한다
+  setTimeout(() => {
+    if (Number(node.dataset.value) === to) node.textContent = String(to);
+  }, ms + 120);
 }

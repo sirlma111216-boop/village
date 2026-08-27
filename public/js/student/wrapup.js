@@ -220,10 +220,12 @@ registerScreen('pledge', ({ onPledgeFinal }) => {
   );
 
   function update(s) {
+    // 분모는 "지금 여기 있는 사람" — 진행자 화면의 막대와 같은 기준이다
     const n = s.pledgeCount || 0;
+    const here = Math.max(s.connectedCount || 0, n);
     countUp(count, n, 500);
-    total.textContent = `/ ${s.playerCount}명이 서약했어`;
-    fill.style.width = s.playerCount ? `${(n / s.playerCount) * 100}%` : '0%';
+    total.textContent = `/ ${here}명이 서약했어`;
+    fill.style.width = here ? `${(n / here) * 100}%` : '0%';
     btn.classList.toggle('hidden', Boolean(s.myPledged));
     done.classList.toggle('hidden', !s.myPledged);
   }
