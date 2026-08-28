@@ -37,17 +37,24 @@ npm run deploy
 
 `main` 에 push 할 때마다 자동으로 배포됩니다. 대시보드에서 **한 번만** 연결하면 끝입니다.
 
-**Cloudflare 대시보드 → Compute (Workers) → Create → Import a repository**
+**Cloudflare 대시보드 → Workers & Pages → Create application**
+→ **Import a repository** 옆의 **Get started**
 → GitHub 계정 승인 → `village` 저장소 선택
 
 | 항목 | 값 |
 |---|---|
-| Project name | `trust-village` |
+| Worker name | **`trust-village`** ← `wrangler.jsonc` 와 같아야 합니다 |
 | Production branch | `main` |
 | Build command | `npm run fonts` |
 | Deploy command | `npx wrangler deploy` |
 | Root directory | `/` |
 | 환경변수 | **없음** |
+
+> ⚠️ **이름이 반드시 `wrangler.jsonc` 의 `name` 과 같아야 합니다.**
+> Cloudflare 는 저장소 이름(`village`)을 미리 채워 주는데, 우리 설정은
+> `trust-village` 라서 그대로 두면 빌드가 실패합니다. 손으로 고쳐 주세요.
+> (반대로 `wrangler.jsonc` 의 `name` 을 `village` 로 바꿔도 됩니다 — 둘 중 하나만
+> 맞추면 됩니다. 배포 주소가 `이름.<계정>.workers.dev` 가 됩니다.)
 
 `wrangler.jsonc` 안에 이름·진입점·Durable Object·정적 파일이 모두 적혀 있어서
 대시보드에서 따로 지정할 것이 없습니다. Durable Object 는 첫 배포 때 `migrations` 를
@@ -73,6 +80,16 @@ Build command 의 `npm run fonts` 는 안전장치입니다. 폰트는 원래 `n
 > 만들 때 **Pages 가 아니라 Workers** 로 만들었는지도 확인하세요. Pages 프로젝트에는
 > Deploy command 칸 자체가 없어서 같은 에러가 납니다. 이 앱은 Durable Objects 를
 > 쓰므로 Worker 여야 합니다.
+>
+> **Pages 인지 Worker 인지 구별하는 법** — 만드는 화면에서:
+>
+> | | Pages (❌) | Worker (✅) |
+> |---|---|---|
+> | 주소 | `...pages.dev` | `...workers.dev` |
+> | 보이는 칸 | Framework preset · Build output directory | Deploy command |
+>
+> 이미 Pages 로 만드셨다면 그 프로젝트는 지우세요. 두면 push 할 때마다 계속
+> 실패 알림이 옵니다.
 
 **첫 배포 뒤 확인할 것**
 
