@@ -55,7 +55,24 @@ npm run deploy
 
 Build command 의 `npm run fonts` 는 안전장치입니다. 폰트는 원래 `npm install` 이
 알아서 만들지만(`postinstall`), 빌더가 설치 스크립트를 건너뛰더라도 글꼴이 빠지지
-않도록 한 번 더 시킵니다. 여러 번 돌려도 결과는 같습니다.
+않도록 한 번 더 시킵니다. 여러 번 돌려도 결과는 같습니다. 비워 둬도 됩니다.
+
+> ⚠️ **`npx wrangler deploy` 를 Build command 칸에 넣지 마세요.**
+> Cloudflare 는 배포용 API 토큰을 **Deploy command 단계에만** 넣어 줍니다.
+> Build command 자리에서 돌리면 이렇게 실패합니다:
+>
+> ```
+> ERROR  In a non-interactive environment, it's necessary to set a
+>        CLOUDFLARE_API_TOKEN environment variable for wrangler to work.
+> Failed: build command exited with code: 1
+> ```
+>
+> **API 토큰을 직접 만들 필요는 없습니다.** Cloudflare 가 계정에 맞춰 알아서
+> 발급하고 계속 씁니다. 위 에러가 났다면 토큰이 아니라 **칸이 잘못된 것**입니다.
+>
+> 만들 때 **Pages 가 아니라 Workers** 로 만들었는지도 확인하세요. Pages 프로젝트에는
+> Deploy command 칸 자체가 없어서 같은 에러가 납니다. 이 앱은 Durable Objects 를
+> 쓰므로 Worker 여야 합니다.
 
 **첫 배포 뒤 확인할 것**
 
