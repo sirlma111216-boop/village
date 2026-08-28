@@ -15,7 +15,7 @@
 
 Cloudflare Workers 에 올립니다. 길은 두 가지이고, 결과는 같습니다.
 
-### 방법 1 — 내 컴퓨터에서 올리기
+### 방법 1 — 내 컴퓨터에서 올리기 (한 번만 급히 올릴 때)
 
 ```bash
 npm install
@@ -33,16 +33,18 @@ npm run deploy
 
 끝입니다. `https://trust-village.<계정>.workers.dev` 주소가 나옵니다.
 
-### 방법 2 — GitHub 에 올리면 Cloudflare 가 알아서 (Workers Builds)
+### 방법 2 — GitHub 에 올리면 Cloudflare 가 알아서 (Workers Builds) ← 이 저장소가 쓰는 방식
 
-`main` 에 push 할 때마다 자동으로 배포됩니다. Cloudflare 대시보드에서 한 번만 연결합니다.
+`main` 에 push 할 때마다 자동으로 배포됩니다. 대시보드에서 **한 번만** 연결하면 끝입니다.
 
-**Compute (Workers) → Create → Import a repository →** 이 저장소 선택
+**Cloudflare 대시보드 → Compute (Workers) → Create → Import a repository**
+→ GitHub 계정 승인 → `village` 저장소 선택
 
 | 항목 | 값 |
 |---|---|
 | Project name | `trust-village` |
-| Build command | *(비워 둠)* |
+| Production branch | `main` |
+| Build command | `npm run fonts` |
 | Deploy command | `npx wrangler deploy` |
 | Root directory | `/` |
 | 환경변수 | **없음** |
@@ -51,9 +53,21 @@ npm run deploy
 대시보드에서 따로 지정할 것이 없습니다. Durable Object 는 첫 배포 때 `migrations` 를
 보고 자동으로 만들어집니다.
 
-> **삽화를 쓴다면** `.gitignore` 가 `public/illustrations/*` 를 막고 있어서
-> 자동 배포에는 그림이 따라가지 않습니다. 자동 배포를 쓰려면 그 줄을 지우고 그림을
-> 커밋하세요. 방법 1(내 컴퓨터에서 올리기)은 로컬 폴더를 그대로 올리므로 상관없습니다.
+Build command 의 `npm run fonts` 는 안전장치입니다. 폰트는 원래 `npm install` 이
+알아서 만들지만(`postinstall`), 빌더가 설치 스크립트를 건너뛰더라도 글꼴이 빠지지
+않도록 한 번 더 시킵니다. 여러 번 돌려도 결과는 같습니다.
+
+**첫 배포 뒤 확인할 것**
+
+1. `https://trust-village.<계정>.workers.dev/host` 가 열리는지
+2. `수업 만들기` 를 눌러 QR 과 6자리 코드가 나오는지
+3. QR 아래 안내가 **"어디서든 이 주소로 들어올 수 있어요."** 로 뜨는지
+   (`localhost` 가 아니라 배포 주소로 인식됐다는 뜻입니다)
+4. 폰으로 QR 을 찍어 별명과 마을이 배정되는지
+
+**삽화**(`public/illustrations/`)는 저장소에 함께 커밋해야 배포에 실려 갑니다.
+파일을 넣고 `git add public/illustrations && git commit && git push` 하면 됩니다.
+없으면 이모지로 대신 뜨므로 수업은 그대로 돌아갑니다.
 
 ### 올리고 나면
 

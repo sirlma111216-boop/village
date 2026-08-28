@@ -27,3 +27,11 @@
 
 가로로 길쭉한 그림(2:1 ~ 16:9)이 잘 맞습니다. 폭 1200px 정도면 프로젝터에서 충분합니다.
 너무 크면(5MB 이상) 학생 폰에서 느려집니다.
+
+## 넣은 뒤에
+
+이 폴더는 깃에 함께 올라갑니다. GitHub 에 push 하면 Cloudflare 가 자동으로 배포합니다.
+
+```bash
+git add public/illustrations && git commit -m "삽화 넣기" && git push
+```

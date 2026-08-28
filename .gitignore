@@ -6,9 +6,9 @@ node_modules/
 .wrangler/
 .dev.vars
 
-# 폰트는 npm install 시 tools/sync-fonts.mjs 가 node_modules 에서 복사합니다
+# 폰트는 npm install 시 tools/sync-fonts.mjs 가 node_modules 에서 만듭니다
+# (Cloudflare 빌더에서도 똑같이 만들어지므로 깃에 두지 않습니다)
 public/fonts/
 
-# 삽화는 선생님이 직접 넣습니다 (README 참고)
-public/illustrations/*
-!public/illustrations/README.md
+# 삽화(public/illustrations/)는 깃에 함께 올립니다.
+# GitHub → Cloudflare 자동 배포가 저장소에 있는 파일만 올리기 때문입니다.
