@@ -51,6 +51,8 @@ export class VillageSession extends DurableObject {
     this.roles = new Map();   // WebSocket → { role, token, villageIndex }
     this.timers = new Map();  // 이름 → setTimeout 핸들
     this.demoTimers = [];
+    /** 봇 제출을 예약해 둔 라운드 (중복 예약 방지 · 깨어난 뒤 재예약 판단) */
+    this.demoScheduledFor = null;
   }
 
   // ================================================================ 상태 보관
@@ -74,6 +76,9 @@ export class VillageSession extends DurableObject {
         if (live.outcomes) this.session.personalOutcomes = new Map(Object.entries(live.outcomes));
       }
       this.syncConnected();
+      // 라운드가 도는 중에 깨어났다면, 아직 내지 않은 봇들을 다시 예약한다.
+      // 예약 타이머는 메모리에만 있어서 잠들 때 함께 사라진다.
+      this.scheduleDemoRound();
       return this.session;
     })();
     return this.loaded;
@@ -285,6 +290,7 @@ export class VillageSession extends DurableObject {
   clearDemoTimers() {
     for (const t of this.demoTimers) clearTimeout(t);
     this.demoTimers = [];
+    this.demoScheduledFor = null;
   }
 
   demoSoon(fn, ms) {
@@ -338,12 +344,28 @@ export class VillageSession extends DurableObject {
     }
   }
 
+  /**
+   * 봇들의 제출을 예약한다.
+   *
+   * 봇의 제출도 사람 학생의 제출과 똑같이 저장해 두어야 한다.
+   * 예약된 타이머는 이 객체의 메모리에만 있어서, 객체가 잠들거나 다시 만들어지면
+   * 사라진다. 그때 남은 봇들을 다시 예약할 수 있도록 어느 라운드를 예약해 두었는지
+   * 기억해 둔다 (같은 라운드를 두 번 예약하지 않기 위해서이기도 하다).
+   */
   scheduleDemoRound() {
     const s = this.session;
     if (!s?.demoOn || !demoCount(s)) return;
+    if (s.round?.phase !== 'running') return;
+    if (this.demoScheduledFor === s.round.stageId) return;
+    this.demoScheduledFor = s.round.stageId;
     scheduleRoundSubmits(s, {
       register: (t) => this.demoTimers.push(t),
-      onProgress: (vi) => this.queueProgress(vi),
+      onProgress: (vi) => {
+        // 사람 학생의 student:choose 와 같은 자리 — 이걸 빼면 잠들었다 깨어날 때
+        // 봇이 낸 것만 통째로 사라져 집계가 0 이 된다
+        this.saveLive().catch(() => {});
+        this.queueProgress(vi);
+      },
     });
   }
 
