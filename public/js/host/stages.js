@@ -1,7 +1,7 @@
 // 진행자 화면 — 입장 대기 · 워밍업 · 스토리 · 규칙
 
 import { el, countUp, toast } from '../lib/dom.js';
-import { getWarmup, getStory, CHOICE_META, CHOICE_ORDER } from '../lib/content.js';
+import { getWarmup, getStory, storyArt, CHOICE_META, CHOICE_ORDER } from '../lib/content.js';
 import { registerStage, stageHead, swatch } from './render.js';
 
 // ==================================================================
@@ -184,7 +184,7 @@ registerStage('story', (area) => {
     story.panels.forEach((p, i) => {
       strip.append(el('div', { class: `story-panel ${BLOCKS[i % BLOCKS.length]} rise rise-${i}` },
         el('p', { class: 'eyebrow' }, p.eyebrow),
-        el('div', { class: 'story-emoji' }, p.emoji),
+        storyArt(p),
         el('p', { class: 't-subhead' }, p.text),
       ));
     });

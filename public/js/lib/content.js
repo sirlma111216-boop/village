@@ -90,3 +90,28 @@ export function scenarioArt(scenario, { className = 'scene-art' } = {}) {
   img.src = scenario.imageUrl;
   return img;
 }
+
+/**
+ * 기게스의 반지 3컷 그림.
+ * ring1~3 이 있으면 그림을, 없으면 지금까지처럼 큰 이모지를 돌려준다.
+ * 컷 자체가 이미 색 블록 위에 놓이므로 폴백에 색을 한 겹 더 얹지 않는다.
+ * alt 는 story.json 에 적어 둔 그림 설명을 그대로 쓴다.
+ */
+export function storyArt(panel, { className = 'story-art', emojiClass = 'story-emoji' } = {}) {
+  const fallback = () => {
+    const box = document.createElement('div');
+    box.className = emojiClass;
+    box.textContent = panel?.emoji || '🖼️';
+    return box;
+  };
+
+  if (!panel?.imageUrl) return fallback();
+
+  const img = document.createElement('img');
+  img.className = className;
+  img.alt = panel.alt || '';
+  img.decoding = 'async';
+  img.addEventListener('error', () => img.replaceWith(fallback()), { once: true });
+  img.src = panel.imageUrl;
+  return img;
+}

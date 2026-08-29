@@ -33,6 +33,14 @@ async function resolveIllustration(env, origin, name) {
   return null;
 }
 
+async function storyWithArt(env, origin) {
+  const panels = [];
+  for (const panel of STORY.panels) {
+    panels.push({ ...panel, imageUrl: await resolveIllustration(env, origin, panel.image) });
+  }
+  return { ...STORY, panels };
+}
+
 async function scenariosWithArt(env, origin) {
   // 구조를 복사해서 imageUrl 만 붙인다 (원본 JSON 은 건드리지 않는다)
   const out = { sets: [] };
@@ -154,7 +162,7 @@ export default {
 
     // 수업 콘텐츠 — content/ 는 정적 폴더 밖이라 Worker 가 직접 내보낸다
     if (pathname === '/api/warmup') return json({ questions: WARMUP_QUESTIONS });
-    if (pathname === '/api/story') return json(STORY);
+    if (pathname === '/api/story') return json(await storyWithArt(env, url.origin));
     if (pathname === '/api/institutions') return json({ institutions: INSTITUTIONS });
 
     if (pathname === '/api/scenarios') {

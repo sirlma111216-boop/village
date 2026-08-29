@@ -376,6 +376,8 @@
 
 .panel { border-radius: var(--r-lg); padding: var(--s-lg); display: grid; gap: var(--s-sm); }
 .panel-emoji { font-size: calc(52px * var(--scale)); line-height: 1; }
+/* 삽화가 있으면 이모지 자리에 들어간다 */
+.panel-art { width: 100%; height: auto; border-radius: var(--r-md); display: block; }
 
 .inst-card { border-radius: var(--r-lg); padding: var(--s-lg); display: grid; gap: var(--s-xs); }
 .inst-big { font-size: calc(40px * var(--scale)); line-height: 1; }

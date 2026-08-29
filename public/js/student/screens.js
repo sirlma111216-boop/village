@@ -2,7 +2,7 @@
 // 서버가 보내 주는 값은 전부 "나 자신의" 것이다. 남의 선택은 애초에 오지 않는다.
 
 import { el, countUp } from '../lib/dom.js';
-import { getWarmup, getStory, getInstitutions, CHOICE_META, CHOICE_ORDER } from '../lib/content.js';
+import { getWarmup, getStory, storyArt, getInstitutions, CHOICE_META, CHOICE_ORDER } from '../lib/content.js';
 import { createRoundScreen } from './round.js';
 
 /** kind → (handlers) => { root, update, cleanup } */
@@ -164,7 +164,7 @@ registerScreen('story', () => {
     story.panels.forEach((p, i) => {
       strip.append(el('div', { class: `panel ${BLOCKS[i % BLOCKS.length]} rise rise-${i}` },
         el('p', { class: 'eyebrow' }, p.eyebrow),
-        el('div', { class: 'panel-emoji' }, p.emoji),
+        storyArt(p, { className: 'panel-art', emojiClass: 'panel-emoji' }),
         el('p', { class: 't-body-lg' }, p.text),
       ));
     });
