@@ -26,6 +26,7 @@ registerScreen('council', ({ onCouncilVote }) => {
   );
 
   let list = [];
+  let lastState = null;
   const nodes = new Map();
 
   getInstitutions().then((items) => {
@@ -52,9 +53,13 @@ registerScreen('council', ({ onCouncilVote }) => {
       nodes.set(inst.id, { btn, count, bar, card });
       cards.append(card);
     });
+    // 제도 목록이 상태보다 늦게 올 수 있다(늦게 들어온 학생·느린 wifi).
+    // 그때는 카드가 다 그려진 뒤 한 번 다시 그린다 — 안 그러면 제도 이름이 비어 보인다.
+    if (lastState) update(lastState);
   });
 
   function update(s) {
+    lastState = s;
     const c = s.council;
     if (!c) return;
     const mine = s.myCouncilVote;
@@ -64,7 +69,8 @@ registerScreen('council', ({ onCouncilVote }) => {
     status.append(
       el('span', { class: 'chip' }, `${c.voted} / ${c.size}명 투표`),
       c.leading
-        ? el('span', { class: 'chip chip-solid' }, `현재 1위 · ${lead ? lead.name : c.leading}`)
+        // 이름을 아직 못 받았으면 제도 id(ledger·audit…)를 그대로 보여 주지 않는다
+        ? el('span', { class: 'chip chip-solid' }, `현재 1위 · ${lead ? lead.name : '집계 중'}`)
         : el('span', { class: 'chip' }, '아직 표가 없어'),
     );
 
