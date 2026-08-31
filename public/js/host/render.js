@@ -70,7 +70,10 @@ export function choiceLegend() {
 
 /**
  * 마을 신뢰지수 가로 막대.
- * 막대는 처음에 0 에서 시작했다가 다음 프레임에 목표 폭으로 자란다.
+ *
+ * 폭은 만들 때 바로 넣는다. 예전에는 0 에서 시작해 다음 프레임에 목표 폭을
+ * 넣었는데, 이 화면은 상태가 올 때마다 다시 그려져서 그 프레임이 오기 전에
+ * 막대가 교체된다. 그러면 폭이 영영 0 으로 남는다.
  * @param {object[]} villages
  * @param {{ranked?:boolean, deltas?:Record<number, number>}} opts
  */
@@ -81,7 +84,10 @@ export function trustBars(villages, opts = {}) {
 
   const list = el('div', { class: 'trust-list' });
   rows.forEach((v, i) => {
-    const fill = el('div', { class: 'trust-fill', style: { background: v.color, width: '0%' } });
+    const fill = el('div', {
+      class: 'trust-fill',
+      style: { background: v.color, width: `${Math.max(2, v.trust)}%` },
+    });
     const delta = opts.deltas?.[v.index];
     list.append(el('div', { class: 'trust-row' },
       el('div', { class: 'trust-name t-body-lg' },
@@ -94,10 +100,6 @@ export function trustBars(villages, opts = {}) {
       el('div', { class: `trust-delta ${delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat'}` },
         delta == null ? '' : delta === 0 ? '±0' : `${delta > 0 ? '+' : ''}${delta}`),
     ));
-    // 다음 프레임에 폭을 넣어야 CSS 전환이 걸린다
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      fill.style.width = `${Math.max(2, v.trust)}%`;
-    }));
   });
   return list;
 }

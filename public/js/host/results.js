@@ -221,11 +221,13 @@ function revealCard(step, s) {
         ...rows.map((r, i) => {
           const fill = el('div', {
             class: 'trust-fill',
-            style: { background: 'var(--ink)', width: '0%', opacity: 0.85 },
+            style: {
+              background: 'var(--ink)',
+              // 폭은 그 자리에서. 다음 프레임으로 미루면 다시 그려질 때 0 으로 남는다.
+              width: `${Math.max(2, (r.coins / max) * 100)}%`,
+              opacity: 0.85,
+            },
           });
-          requestAnimationFrame(() => requestAnimationFrame(() => {
-            fill.style.width = `${Math.max(2, (r.coins / max) * 100)}%`;
-          }));
           return el('div', { class: 'trust-row' },
             el('div', { class: 'trust-name t-body-lg' },
               el('span', { class: 'trust-rank' }, String(i + 1)), swatch(r.color), `${r.emoji} ${r.name}`),
@@ -262,13 +264,9 @@ function revealCard(step, s) {
   rows.forEach((r) => {
     const bar = el('div', { class: `honest-bar ${r.honestRate == null ? 'empty' : ''}` },
       r.honestRate == null ? '—' : `${r.honestRate}%`);
-    if (r.honestRate != null) {
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        bar.style.height = `${Math.max(12, r.honestRate)}%`;
-      }));
-    } else {
-      bar.style.height = '12%';
-    }
+    // 높이는 그 자리에서 정한다. requestAnimationFrame 으로 미루면 그 사이에
+    // 카드가 다시 그려져 값이 붙지 않고, 막대가 전부 같은 높이로 남는다.
+    bar.style.height = `${r.honestRate == null ? 12 : Math.max(12, r.honestRate)}%`;
     chart.append(el('div', { class: 'honest-col' },
       el('div', { class: 'honest-bar-wrap' }, bar),
       el('span', { class: 'honest-label' }, r.label),
