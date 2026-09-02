@@ -22,6 +22,7 @@
    ============================================================ */
 
 .setup-wrap {
+  position: relative;   /* 왼쪽 위 포털 로고의 기준 */
   min-height: 100vh;
   display: grid;
   place-items: center;
@@ -725,3 +726,6 @@
 .demo-flag { background: var(--accent-magenta); border-color: var(--accent-magenta); }
 #demoBtn.is-on { background: var(--ink); color: var(--canvas); border-color: var(--ink); }
 .setup-demo { grid-column: 1 / -1; }
+
+/* 수업 만들기 화면 — 포털 로고를 왼쪽 위 모서리에 */
+.portal-corner { position: absolute; top: var(--s-lg); left: var(--s-xl); }

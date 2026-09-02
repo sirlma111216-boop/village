@@ -640,3 +640,6 @@
      그림은 앞 화면에 크게 떠 있고, 폰에서는 세 선택지를 나란히 보는 것이 먼저다. */
   .r-card:has(.r-inst) .art-slot { display: none; }
 }
+
+/* 입장 화면 — 포털 로고는 왼쪽 위, 폭은 글자만큼만 */
+.phone > .portal-link { justify-self: start; }
