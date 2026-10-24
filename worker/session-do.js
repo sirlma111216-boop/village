@@ -33,7 +33,7 @@ import { decode, ack, nack, push } from './protocol.js';
 const REFLECTIONS_PER_STUDENT = 3;
 /** 34명이 한꺼번에 눌러도 브로드캐스트가 폭주하지 않도록 묶어 보낸다 */
 const THROTTLE_MS = 350;
-/** 수업이 끝나고 이만큼 지나면 저장소를 비운다 */
+/** 마지막 저장 후 이만큼 지나면 저장소를 비운다 */
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 
 export class VillageSession extends DurableObject {
@@ -42,6 +42,7 @@ export class VillageSession extends DurableObject {
     /** @type {Session|null} */
     this.session = null;
     this.loaded = null;
+    this.expiresAt = null;
 
     /**
      * 소켓마다 역할을 붙여 둔다 (호스트인지, 어느 학생인지).
@@ -64,7 +65,13 @@ export class VillageSession extends DurableObject {
       const snap = await this.ctx.storage.get('session');
       if (snap) {
         const age = Date.now() - (snap.updatedAt || 0);
-        if (age < SESSION_TTL_MS) this.session = Session.fromSnapshot(snap);
+        if (age < SESSION_TTL_MS) {
+          this.session = Session.fromSnapshot(snap);
+          this.expiresAt = snap.updatedAt + SESSION_TTL_MS;
+        } else {
+          await this.ctx.storage.deleteAll();
+          await this.ctx.storage.deleteAlarm();
+        }
       }
       // 잠들기 전에 돌고 있던 라운드가 있으면 그대로 이어 받는다
       const live = await this.ctx.storage.get('live');
@@ -75,6 +82,7 @@ export class VillageSession extends DurableObject {
         }
         if (live.outcomes) this.session.personalOutcomes = new Map(Object.entries(live.outcomes));
       }
+      await this.armRoundAlarm();
       this.syncConnected();
       // 라운드가 도는 중에 깨어났다면, 아직 내지 않은 봇들을 다시 예약한다.
       // 예약 타이머는 메모리에만 있어서 잠들 때 함께 사라진다.
@@ -90,7 +98,10 @@ export class VillageSession extends DurableObject {
    */
   async save() {
     if (!this.session) return;
-    await this.ctx.storage.put('session', this.session.toSnapshot());
+    const snap = this.session.toSnapshot();
+    await this.ctx.storage.put('session', snap);
+    this.expiresAt = snap.updatedAt + SESSION_TTL_MS;
+    await this.armRoundAlarm();
   }
 
   /** 기다리지 않는 저장 — 진행자 화면이 저장 속도에 묶이지 않게 */
@@ -238,19 +249,32 @@ export class VillageSession extends DurableObject {
    * setTimeout 과 달리 알람은 객체가 잠들었다 깨어나도 살아 있다.
    */
   async armRoundAlarm() {
+    const candidates = [];
+    if (this.expiresAt) candidates.push(this.expiresAt);
     const left = remainingMs(this.session);
-    if (this.session?.round?.phase === 'running' && left > 0) {
-      await this.ctx.storage.setAlarm(Date.now() + left + 50);
-    } else {
-      await this.ctx.storage.deleteAlarm();
-    }
+    if (this.session?.round?.phase === 'running' && left > 0) candidates.push(Date.now() + left + 50);
+    if (candidates.length) await this.ctx.storage.setAlarm(Math.max(Date.now() + 1, Math.min(...candidates)));
+    else await this.ctx.storage.deleteAlarm();
   }
 
   /** 시간이 다 됐을 때 Cloudflare 가 불러 준다 */
   /** 시간이 다 됐을 때 Cloudflare 가 깨워 준다 (잠들어 있었어도) */
   async alarm() {
     await this.load();
-    if (this.session?.round?.phase !== 'running') return;
+    if (this.expiresAt && Date.now() >= this.expiresAt) {
+      for (const timer of this.timers.values()) clearTimeout(timer);
+      this.timers.clear();
+      this.clearDemoTimers();
+      for (const ws of this.ctx.getWebSockets()) { try { ws.close(1000, '보관기간 만료'); } catch {} }
+      this.roles.clear();
+      await this.ctx.storage.deleteAll();
+      await this.ctx.storage.deleteAlarm();
+      this.session = null;
+      this.loaded = null;
+      this.expiresAt = null;
+      return;
+    }
+    if (this.session?.round?.phase !== 'running') return this.armRoundAlarm();
     if (remainingMs(this.session) > 0) return this.armRoundAlarm();   // 연장됐다면 다시 예약
     await this.finishRound('time');
   }
@@ -262,8 +286,7 @@ export class VillageSession extends DurableObject {
     this.clearDemoTimers();
 
     const results = closeRound(s);
-    await this.ctx.storage.deleteAlarm();
-    this.saveSoon();
+    await this.save();
     await this.saveLive();   // 선택 원본은 사라지고, 본인 결과만 남는다
 
     this.broadcast(push('round:closed', { reason, results }), (m) => m.role === 'host');
