@@ -37,6 +37,16 @@ const THROTTLE_MS = 350;
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 
 export class VillageSession extends DurableObject {
+  // Internal namespace RPC: preserve earlier game alarms and do not change activity.
+  async ensureRetention() {
+    const saved = await this.ctx.storage.get('session');
+    if (!saved) return { stored: false, armed: false };
+    if (!Number.isFinite(saved.updatedAt) || saved.updatedAt <= 0) throw new Error('Missing retention timestamp');
+    const deadline = Math.max(Date.now() + 1000, saved.updatedAt + SESSION_TTL_MS);
+    const alarm = await this.ctx.storage.getAlarm();
+    if (alarm === null || alarm > deadline) await this.ctx.storage.setAlarm(deadline);
+    return { stored: true, armed: true };
+  }
   constructor(ctx, env) {
     super(ctx, env);
     /** @type {Session|null} */
